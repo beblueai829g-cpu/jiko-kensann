@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>自己研鑽トラッカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-height:100vh;font-size:15px}
+.app{max-width:480px;margin:0 auto;padding:0 0 80px}
+.hdr{padding:20px 16px 0}
+.hdr h1{font-size:18px;font-weight:500}
+.hdr p{font-size:12px;color:#7A7870;margin-top:2px}
+.tab-bar{display:flex;position:sticky;top:0;z-index:100;background:#F7F6F2;border-bottom:1px solid #E4E2DA;padding:0 16px;margin-top:12px}
+.tab{flex:1;padding:11px 2px;font-size:13px;font-family:'DM Sans',sans-serif;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;color:#7A7870;white-space:nowrap;text-align:center}
+.tab.active{color:#1A1916;border-bottom-color:#1D9E75;font-weight:500}
+.pane{display:none;padding:16px}
+.pane.active{display:block}
+.slbl{font-size:11px;font-weight:500;color:#7A7870;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.day-row{display:flex;gap:5px;margin-bottom:14px}
+.day-btn{flex:1;padding:8px 2px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid #E4E2DA;border-radius:8px;background:#fff;cursor:pointer;color:#7A7870;text-align:center;transition:all .15s}
+.day-btn.active{background:#1D9E75;color:#fff;border-color:#1D9E75;font-weight:500}
+.day-btn.saved{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.type-row{display:flex;gap:8px;margin-bottom:14px}
+.type-btn{flex:1;padding:10px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid #E4E2DA;border-radius:10px;background:#fff;cursor:pointer;color:#7A7870;text-align:center;transition:all .15s}
+.type-btn.active{background:#E1F5EE;color:#085041;border-color:#5DCAA5;font-weight:500}
+.card{background:#fff;border:1px solid #E4E2DA;border-radius:12px;padding:14px;margin-bottom:12px}
+.task-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #E4E2DA;gap:10px}
+.task-row:last-child{border-bottom:none}
+.task-meta{flex:1;min-width:0}
+.task-name{font-size:14px;font-weight:500}
+.task-plan{font-size:11px;color:#7A7870;margin-top:1px}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-full{background:#1D9E75}.dot-partial{background:#EF9F27}.dot-none{background:#E4E2DA}
+.mins-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.mins-input{width:54px;font-size:14px;font-family:'DM Mono',monospace;border:1px solid #E4E2DA;border-radius:6px;padding:5px 6px;background:#F7F6F2;color:#1A1916;text-align:center}
+.mins-input:focus{outline:none;border-color:#1D9E75}
+.btn-primary{width:100%;padding:12px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer}
+.btn-primary:active{opacity:.85}
+.btn-ghost{width:100%;padding:10px;background:none;color:#7A7870;border:1px solid #E4E2DA;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:8px}
+.saved-msg{font-size:12px;color:#0F6E56;margin-top:8px;opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:4px}
+.saved-msg.show{opacity:1}
+.metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.metric{background:#fff;border:1px solid #E4E2DA;border-radius:8px;padding:10px;text-align:center}
+.metric-val{font-size:18px;font-weight:500;font-family:'DM Mono',monospace}
+.metric-lbl{font-size:10px;color:#7A7870;margin-top:2px}
+.bar-wrap{margin-bottom:10px}
+.bar-labels{display:flex;justify-content:space-between;font-size:12px;color:#7A7870;margin-bottom:3px}
+.bar-track{height:6px;background:#F7F6F2;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;background:#1D9E75;transition:width .4s}
+.bar-fill.partial{background:#EF9F27}.bar-fill.zero{background:#E4E2DA;width:4px!important}
+.alert{border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.alert-warn{background:#FAEEDA}.alert-ok{background:#E1F5EE}
+.alert-t{font-size:13px;font-weight:500;color:#633806;margin-bottom:2px}
+.alert-t.ok{color:#085041}
+.alert-b{font-size:13px;color:#854F0B}
+.alert-b.ok{color:#0F6E56}
+.miss-table{width:100%;margin-bottom:10px;border-collapse:collapse}
+.miss-table td{font-size:12px;padding:3px 0}
+.miss-name{color:#7A7870}
+.miss-val{text-align:right;font-family:'DM Mono',monospace;font-size:12px;font-weight:500}
+.miss-val.red{color:#A32D2D}.miss-val.ok{color:#1D9E75}
+.bank-sec{margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 11px;font-size:12px;font-family:'DM Sans',sans-serif;border-radius:99px;cursor:pointer;border:1px solid;user-select:none;display:inline-flex;align-items:center;gap:5px;transition:opacity .1s}
+.chip:active{opacity:.7}
+.chip-study{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.chip-fixed{background:#fff;color:#1A1916;border-color:#E4E2DA}
+.chip-done{opacity:.4;cursor:default}
+.chip-miss{font-size:11px;font-family:'DM Mono',monospace;font-weight:500}
+.chip-miss.red{color:#A32D2D}.chip-miss.ok{color:#1D9E75}.chip-miss.over{color:#854F0B}
+.wd-day-title{font-size:15px;font-weight:500;margin-bottom:8px;margin-top:6px}
+.sched-list{margin-bottom:6px}
+.sched-item{display:flex;flex-direction:column;padding:9px 10px;border-radius:10px;margin-bottom:6px;border:1px solid;gap:6px}
+.sched-item.s-study{background:#E1F5EE;border-color:#5DCAA5}
+.sched-item.s-fixed{background:#fff;border-color:#E4E2DA}
+.sched-item.s-custom{background:#F7F6F2;border-color:#E4E2DA}
+.item-top{display:flex;align-items:center;gap:6px}
+.item-name{font-size:13px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s-study .item-name{color:#085041}
+.s-fixed .item-name,.s-custom .item-name{color:#1A1916}
+.dur-badge{font-size:11px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:99px;background:rgba(255,255,255,.5);color:#085041;white-space:nowrap;flex-shrink:0}
+.s-fixed .dur-badge,.s-custom .dur-badge{background:#F7F6F2;color:#7A7870}
+.item-actions{display:flex;gap:4px;flex-shrink:0}
+.act-btn{background:none;border:1px solid #E4E2DA;cursor:pointer;font-size:11px;padding:3px 8px;border-radius:4px;display:flex;align-items:center;gap:3px;font-family:'DM Sans',sans-serif;color:#7A7870;white-space:nowrap}
+.act-btn:active{background:#F7F6F2}
+.act-btn.danger{color:#A32D2D;border-color:#F09595}
+.item-times{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tsel{font-size:12px;font-family:'DM Mono',monospace;border:1px solid #E4E2DA;border-radius:6px;padding:4px 6px;background:#fff;color:#1A1916;cursor:pointer}
+.s-study .tsel{border-color:#5DCAA5;background:rgba(255,255,255,.5)}
+.tsel:focus{outline:none;border-color:#1D9E75}
+.time-sep{font-size:11px;color:#7A7870}
+.total-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#F7F6F2;margin-bottom:8px;font-size:12px;color:#7A7870}
+.total-bar strong{font-family:'DM Mono',monospace;color:#1A1916}
+.add-row{display:flex;gap:6px;margin-top:6px;margin-bottom:4px}
+.add-custom-inp{flex:1;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid #E4E2DA;border-radius:10px;padding:8px 10px;background:#F7F6F2;color:#1A1916}
+.add-custom-inp:focus{outline:none;border-color:#1D9E75}
+.add-custom-btn{padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid #5DCAA5;border-radius:10px;background:#E1F5EE;color:#085041;cursor:pointer;white-space:nowrap}
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.popup-sheet{background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:480px;padding:16px;max-height:60vh;overflow-y:auto}
+.popup-title{font-size:14px;font-weight:500;color:#1A1916;margin-bottom:12px;text-align:center}
+.popup-slot-btn{display:flex;align-items:center;gap:8px;width:100%;padding:11px 14px;font-size:14px;font-family:'DM Sans',sans-serif;background:#F7F6F2;border:1px solid #E4E2DA;border-radius:10px;cursor:pointer;color:#1A1916;margin-bottom:6px}
+.popup-slot-btn:active{background:#E4E2DA}
+.popup-cancel{display:block;width:100%;padding:11px;text-align:center;font-size:14px;font-family:'DM Sans',sans-serif;background:none;border:1px solid #E4E2DA;border-radius:10px;cursor:pointer;color:#7A7870;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr"><h1>自己研鑽トラッカー</h1><p>平日記録 → 週間集計 → 土日計画</p></div>
+  <div class="tab-bar">
+    <button class="tab active" onclick="showTab('record')"><i class="ti ti-pencil"></i> 今日の記録</button>
+    <button class="tab" onclick="showTab('week')"><i class="ti ti-chart-bar"></i> 週間集計</button>
+    <button class="tab" onclick="showTab('weekend')"><i class="ti ti-calendar"></i> 土日計画</button>
+  </div>
+
+  <div class="pane active" id="pane-record">
+    <div class="slbl">曜日を選択</div>
+    <div class="day-row" id="day-btns">
+      <button class="day-btn" onclick="pickDay(0)">月</button>
+      <button class="day-btn" onclick="pickDay(1)">火</button>
+      <button class="day-btn" onclick="pickDay(2)">水</button>
+      <button class="day-btn" onclick="pickDay(3)">木</button>
+      <button class="day-btn" onclick="pickDay(4)">金</button>
+    </div>
+    <div class="slbl">勤務形態</div>
+    <div class="type-row">
+      <button class="type-btn" id="btn-tw" onclick="pickType('tw')"><i class="ti ti-home"></i> テレワーク</button>
+      <button class="type-btn" id="btn-of" onclick="pickType('office')"><i class="ti ti-building"></i> 出社</button>
+    </div>
+    <div class="card">
+      <div class="slbl" style="margin-bottom:5px">自己研鑽タスク（実施した分数を入力）</div>
+      <div id="task-list"><p style="font-size:13px;color:#7A7870;padding:6px 0">勤務形態を選択してください</p></div>
+    </div>
+    <button class="btn-primary" onclick="saveDay()">この日を保存</button>
+    <div class="saved-msg" id="rec-saved"><i class="ti ti-check"></i> 保存しました</div>
+    <button class="btn-ghost" onclick="resetAll()"><i class="ti ti-refresh"></i> 週リセット（新しい週の開始）</button>
+  </div>
+
+  <div class="pane" id="pane-week">
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-val" id="m-got" style="color:#1D9E75">0分</div><div class="metric-lbl">確保</div></div>
+      <div class="metric"><div class="metric-val" id="m-miss" style="color:#854F0B">0分</div><div class="metric-lbl">不足</div></div>
+      <div class="metric"><div class="metric-val" id="m-rate">—</div><div class="metric-lbl">達成率</div></div>
+    </div>
+    <div class="card"><div class="slbl">曜日別</div><div id="day-bars"></div></div>
+    <div class="card"><div class="slbl">タスク別（週合計）</div><div id="task-bars"></div></div>
+    <div id="week-msg"></div>
+  </div>
+
+  <div class="pane" id="pane-weekend">
+    <div id="wd-alert"></div>
+    <div class="bank-sec">
+      <div class="slbl">自己研鑽タスク — タップして追加</div>
+      <div class="chips" id="study-bank"></div>
+    </div>
+    <div class="bank-sec">
+      <div class="slbl">固定予定 — タップして追加</div>
+      <div class="chips" id="fixed-bank"></div>
+    </div>
+    <div>
+      <div class="wd-day-title"><i class="ti ti-sun" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>土曜日</div>
+      <div class="slbl" style="margin-bottom:4px">タスク別不足時間</div>
+      <table class="miss-table" id="sat-miss"></table>
+      <div class="slbl" style="margin-top:10px;margin-bottom:5px">スケジュール</div>
+      <div id="sat-total-bar"></div>
+      <div class="sched-list" id="sat-list"></div>
+      <div class="add-row">
+        <input class="add-custom-inp" id="sat-custom-inp" placeholder="自由入力（例：買い物、友人と会う）"/>
+        <button class="add-custom-btn" onclick="addCustom('sat')"><i class="ti ti-plus"></i> 追加</button>
+      </div>
+    </div>
+    <div style="height:16px"></div>
+    <div>
+      <div class="wd-day-title"><i class="ti ti-moon" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>日曜日</div>
+      <div class="slbl" style="margin-bottom:4px">タスク別不足時間</div>
+      <table class="miss-table" id="sun-miss"></table>
+      <div class="slbl" style="margin-top:10px;margin-bottom:5px">スケジュール</div>
+      <div id="sun-total-bar"></div>
+      <div class="sched-list" id="sun-list"></div>
+      <div class="add-row">
+        <input class="add-custom-inp" id="sun-custom-inp" placeholder="自由入力（例：買い物、友人と会う）"/>
+        <button class="add-custom-btn" onclick="addCustom('sun')"><i class="ti ti-plus"></i> 追加</button>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+    <button class="btn-primary" onclick="saveWeekend()">土日計画を保存</button>
+    <div class="saved-msg" id="wd-saved"><i class="ti ti-check"></i> 保存しました</div>
+  </div>
+</div>
+
+<div id="popup" style="display:none">
+  <div class="popup-overlay" onclick="closePopup()">
+    <div class="popup-sheet" onclick="event.stopPropagation()">
+      <div class="popup-title" id="popup-title"></div>
+      <div id="popup-slots"></div>
+      <button class="popup-cancel" onclick="closePopup()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TASKS_TW=[{id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},{id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},{id:'prog',name:'プログラミング',planMins:60,time:'19:00〜20:00'},{id:'read',name:'読書',planMins:30,time:'22:30〜23:00'}];
+const TASKS_OF=[{id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},{id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},{id:'read',name:'読書',planMins:30,time:'22:30〜23:00'}];
+const ALL_IDS=['eng','joho','prog','read'];
+const TMAP={};[...TASKS_TW,...TASKS_OF].forEach(t=>TMAP[t.id]=t);
+const FIXED_DEFAULTS=['床布団','楽天マガジン','YouTubeとガイカワサキをGeminiで','料理','中島さん質問','エニタイム'];
+function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
+function sv(k,v){localStorage.setItem(k,JSON.stringify(v))}
+let rec=ld('jkv6_rec',{});
+let wdItems=ld('jkv6_wdi',{sat:[],sun:[]});
+let curDay=null,curType=null,curMins={},pendingChip=null;
+function getTasks(t){return t==='tw'?TASKS_TW:TASKS_OF}
+function pickDay(i){
+  curDay=i;
+  document.querySelectorAll('.day-btn').forEach((b,j)=>{b.classList.toggle('active',j===i);if(rec[j]&&j!==i)b.classList.add('saved');else if(j!==i)b.classList.remove('saved');});
+  const r=rec[i];
+  if(r){curType=r.type;curMins={...r.mins};}else{curType=null;curMins={};}
+  document.getElementById('btn-tw').classList.toggle('active',curType==='tw');
+  document.getElementById('btn-of').classList.toggle('active',curType==='office');
+  renderTasks();
+}
+function pickType(t){if(curDay===null)return;curType=t;curMins={};document.getElementById('btn-tw').classList.toggle('active',t==='tw');document.getElementById('btn-of').classList.toggle('active',t==='office');renderTasks();}
+function renderTasks(){
+  const el=document.getElementById('task-list');
+  if(!curType){el.innerHTML='<p style="font-size:13px;color:#7A7870;padding:6px 0">勤務形態を選択してください</p>';return;}
+  el.innerHTML=getTasks(curType).map(t=>{
+    const v=curMins[t.id]!==undefined&&curMins[t.id]!==''?curMins[t.id]:'';
+    const pct=v===''?0:Math.min(100,Math.round(Number(v)/t.planMins*100));
+    const dc=v===''?'dot-none':pct>=100?'dot-full':'dot-partial';
+    return `<div class="task-row"><div class="sdot ${dc}"></div><div class="task-meta"><div class="task-name">${t.name}</div><div class="task-plan">予定 ${t.planMins}分（${t.time}）</div></div><div class="mins-wrap"><input class="mins-input" type="number" inputmode="numeric" min="0" max="180" placeholder="0" value="${v}" oninput="setMins('${t.id}',this.value)"/><span style="font-size:12px;color:#7A7870">分</span></div></div>`;
+  }).join('');
+}
+function setMins(id,v){curMins[id]=v===''?'':Math.max(0,parseInt(v)||0);renderTasks();}
+function saveDay(){
+  if(curDay===null||!curType)return;
+  rec[curDay]={type:curType,mins:{...curMins}};sv('jkv6_rec',rec);
+  document.querySelectorAll('.day-btn')[curDay].classList.remove('active');
+  document.querySelectorAll('.day-btn')[curDay].classList.add('saved');
+  flash('rec-saved');
+}
+function resetAll(){
+  if(!confirm('今週のデータをリセットしますか？'))return;
+  rec={};wdItems={sat:[],sun:[]};sv('jkv6_rec',rec);sv('jkv6_wdi',wdItems);
+  curDay=null;curType=null;curMins={};
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active','saved'));
+  document.getElementById('btn-tw').classList.remove('active');document.getElementById('btn-of').classList.remove('active');
+  renderTasks();
+}
+function flash(id){const e=document.getElementById(id);e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000);}
+function calcWeek(){
+  let totPlan=0,totGot=0;const tp={},tg={};ALL_IDS.forEach(id=>{tp[id]=0;tg[id]=0;});
+  for(let i=0;i<5;i++){const r=rec[i];if(!r)continue;getTasks(r.type).forEach(t=>{tp[t.id]+=t.planMins;totPlan+=t.planMins;const g=Math.min(Number(r.mins[t.id])||0,t.planMins);tg[t.id]+=g;totGot+=g;});}
+  return{totPlan,totGot,tp,tg};
+}
+function calcMPT(){const{tp,tg}=calcWeek();const m={};ALL_IDS.forEach(id=>m[id]=Math.max(0,(tp[id]||0)-(tg[id]||0)));return m;}
+function renderWeek(){
+  const{totPlan,totGot,tp,tg}=calcWeek();const miss=totPlan-totGot;const rate=totPlan>0?Math.round(totGot/totPlan*100):null;
+  document.getElementById('m-got').textContent=totGot+'分';
+  document.getElementById('m-miss').textContent=Math.max(0,miss)+'分';
+  document.getElementById('m-rate').textContent=rate!==null?rate+'%':'—';
+  document.getElementById('m-rate').style.color=rate>=100?'#1D9E75':rate>=60?'#1A1916':'#854F0B';
+  const DAYS=['月','火','水','木','金'];
+  document.getElementById('day-bars').innerHTML=DAYS.map((nm,i)=>{
+    const r=rec[i];if(!r)return `<div class="bar-wrap"><div class="bar-labels"><span>${nm}曜日</span><span>未記録</span></div><div class="bar-track"><div class="bar-fill zero"></div></div></div>`;
+    const pl=getTasks(r.type).reduce((s,t)=>s+t.planMins,0);const gt=getTasks(r.type).reduce((s,t)=>s+Math.min(Number(r.mins[t.id])||0,t.planMins),0);const pct=pl>0?Math.round(gt/pl*100):0;const cls=pct>=100?'':pct>0?'partial':'zero';
+    return `<div class="bar-wrap"><div class="bar-labels"><span>${nm}（${r.type==='tw'?'TW':'出社'}）</span><span>${gt}/${pl}分（${pct}%）</span></div><div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+  document.getElementById('task-bars').innerHTML=ALL_IDS.map(id=>{if(!tp[id])return '';const pct=Math.round(tg[id]/tp[id]*100);const cls=pct>=100?'':pct>0?'partial':'zero';return `<div class="bar-wrap"><div class="bar-labels"><span>${TMAP[id].name}</span><span>${tg[id]}/${tp[id]}分</span></div><div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div></div>`;}).join('');
+  const wm=document.getElementById('week-msg');if(!totPlan){wm.innerHTML='';return;}
+  wm.innerHTML=miss<=0?`<div class="alert alert-ok"><div class="alert-t ok">今週は全て達成！</div><div class="alert-b ok">全ての自己研鑽時間を確保できました。</div></div>`:`<div class="alert alert-warn"><div class="alert-t">今週の不足：${miss}分</div><div class="alert-b">土日計画タブで補充しましょう。</div></div>`;
+}
+function timeToMins(t){if(!t)return null;const p=t.split(':');if(p.length<2)return null;return parseInt(p[0])*60+parseInt(p[1]);}
+function minsToTime(m){return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
+function buildTimeOptions(selected){
+  let opts='<option value="">--</option>';
+  for(let h=6;h<24;h++)for(let m=0;m<60;m+=15){const t=minsToTime(h*60+m);opts+=`<option value="${t}"${selected===t?' selected':''}>${t}</option>`;}
+  return opts;
+}
+function calcDur(s,e){const sm=timeToMins(s),em=timeToMins(e);if(sm===null||em===null||em<=sm)return null;return em-sm;}
+function calcStudyScheduledPerTask(){
+  const sc={};ALL_IDS.forEach(id=>sc[id]=0);
+  ['sat','sun'].forEach(d=>(wdItems[d]||[]).forEach(item=>{if(item.type==='study'&&item.taskId){const d2=calcDur(item.startTime,item.endTime);if(d2)sc[item.taskId]=(sc[item.taskId]||0)+d2;}}));
+  return sc;
+}
+function calcRemainingPerTask(){const mpt=calcMPT();const sc=calcStudyScheduledPerTask();const r={};ALL_IDS.forEach(id=>r[id]=(mpt[id]||0)-(sc[id]||0));return r;}
+function missTableHTML(mpt){return ALL_IDS.map(id=>{if(!TMAP[id])return '';const m=mpt[id]||0;return `<tr><td class="miss-name">${TMAP[id].name}</td><td class="miss-val ${m>0?'red':'ok'}">${m>0?'−'+m+'分':'✓'}</td></tr>`;}).join('');}
+function renderStudyBank(rem){
+  document.getElementById('study-bank').innerHTML=ALL_IDS.map(id=>{
+    if(!TMAP[id])return '';const mpt=calcMPT();const base=mpt[id]||0;
+    if(base===0)return `<span class="chip chip-study chip-done">${TMAP[id].name} <i class="ti ti-check"></i></span>`;
+    const r=rem[id]||0;
+    const badge=r>0?`<span class="chip-miss red">−${r}分</span>`:r===0?`<span class="chip-miss ok">補填済</span>`:`<span class="chip-miss over">+${-r}分超過</span>`;
+    return `<span class="chip chip-study" onclick="chipTap('study','${id}','${TMAP[id].name}',${Math.max(0,r)})">${TMAP[id].name} ${badge}</span>`;
+  }).join('');
+}
+function renderFixedBank(){document.getElementById('fixed-bank').innerHTML=FIXED_DEFAULTS.map(name=>`<span class="chip chip-fixed" onclick="chipTap('fixed','${name}','${name}',0)">${name}</span>`).join('');}
+function renderTotalBar(day){
+  const items=wdItems[day]||[];const el=document.getElementById(day+'-total-bar');
+  let total=0;items.forEach(item=>{const d=calcDur(item.startTime,item.endTime);if(d)total+=d;});
+  if(!total){el.innerHTML='';return;}
+  const h=Math.floor(total/60),m=total%60;
+  el.innerHTML=`<div class="total-bar"><span>予定合計</span><strong>${h>0?h+'時間':''}${m>0?m+'分':''}</strong></div>`;
+}
+function renderList(day){
+  const el=document.getElementById(day+'-list');const items=wdItems[day]||[];
+  if(items.length===0){el.innerHTML='<p style="font-size:12px;color:#7A7870;padding:4px 0 8px">まだ予定がありません</p>';renderTotalBar(day);return;}
+  el.innerHTML=items.map((item,ii)=>{
+    const cls=item.type==='study'?'s-study':item.type==='fixed'?'s-fixed':'s-custom';
+    const dur=calcDur(item.startTime,item.endTime);
+    return `<div class="sched-item ${cls}">
+      <div class="item-top">
+        <span class="item-name">${item.name}</span>
+        ${dur?`<span class="dur-badge">${dur}分</span>`:''}
+        <div class="item-actions">
+          <button class="act-btn" onclick="cloneItem('${day}',${ii})"><i class="ti ti-copy"></i> 複製</button>
+          <button class="act-btn danger" onclick="rmItem('${day}',${ii})"><i class="ti ti-trash"></i> 削除</button>
+        </div>
+      </div>
+      <div class="item-times">
+        <select class="tsel" onchange="updTime('${day}',${ii},'startTime',this.value)">${buildTimeOptions(item.startTime||'')}</select>
+        <span class="time-sep">〜</span>
+        <select class="tsel" onchange="updTime('${day}',${ii},'endTime',this.value)">${buildTimeOptions(item.endTime||'')}</select>
+      </div>
+    </div>`;
+  }).join('');
+  renderTotalBar(day);
+}
+function sortItems(day){wdItems[day]=(wdItems[day]||[]).sort((a,b)=>{const am=timeToMins(a.startTime),bm=timeToMins(b.startTime);if(am===null&&bm===null)return 0;if(am===null)return 1;if(bm===null)return -1;return am-bm;});}
+function updTime(day,ii,field,val){wdItems[day][ii][field]=val;sortItems(day);renderList(day);const rem=calcRemainingPerTask();renderStudyBank(rem);refreshWDAlert();}
+function cloneItem(day,ii){const o=wdItems[day][ii];wdItems[day].splice(ii+1,0,{...o});renderList(day);refreshWDAlert();}
+function rmItem(day,ii){wdItems[day].splice(ii,1);renderList(day);const rem=calcRemainingPerTask();renderStudyBank(rem);refreshWDAlert();}
+function addCustom(day){
+  const inp=document.getElementById(day+'-custom-inp');const name=inp.value.trim();if(!name)return;
+  wdItems[day].push({type:'custom',name,startTime:'',endTime:''});sortItems(day);renderList(day);inp.value='';
+}
+function chipTap(type,id,name,mins){
+  pendingChip={type,id,name,mins,taskId:type==='study'?id:null};
+  document.getElementById('popup-title').textContent=`「${name}」をどちらに追加しますか？`;
+  document.getElementById('popup-slots').innerHTML=
+    `<button class="popup-slot-btn" onclick="addChipTo('sat')"><i class="ti ti-sun" style="font-size:15px"></i>土曜日に追加</button>`+
+    `<button class="popup-slot-btn" onclick="addChipTo('sun')"><i class="ti ti-moon" style="font-size:15px"></i>日曜日に追加</button>`+
+    `<button class="popup-slot-btn" onclick="addChipTo('both')"><i class="ti ti-calendar" style="font-size:15px"></i>両方に追加</button>`;
+  document.getElementById('popup').style.display='block';
+}
+function addChipTo(day){
+  if(!pendingChip)return;
+  const item={type:pendingChip.type,taskId:pendingChip.taskId,name:pendingChip.name,startTime:'',endTime:''};
+  if(day==='both'){wdItems['sat'].push({...item});wdItems['sun'].push({...item});}
+  else{wdItems[day].push({...item});}
+  sortItems('sat');sortItems('sun');renderList('sat');renderList('sun');
+  const rem=calcRemainingPerTask();renderStudyBank(rem);refreshWDAlert();closePopup();
+}
+function closePopup(){document.getElementById('popup').style.display='none';pendingChip=null;}
+function refreshWDAlert(){
+  const mpt=calcMPT();const rem=calcRemainingPerTask();
+  const totalMiss=Object.values(mpt).reduce((s,v)=>s+v,0);
+  const totalRem=Math.max(0,Object.values(rem).reduce((s,v)=>s+v,0));
+  const al=document.getElementById('wd-alert');
+  if(totalMiss===0){al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">今週は達成済み！</div><div class="alert-b ok">追加の自己研鑽は不要です。</div></div>`;}
+  else if(totalRem<=0){al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">全ての不足分を補填済み！</div><div class="alert-b ok">土日のスケジュールで${totalMiss}分を確保しました。</div></div>`;}
+  else{const over=Object.values(rem).reduce((s,v)=>s+(v<0?-v:0),0);al.innerHTML=`<div class="alert alert-warn"><div class="alert-t">今週の不足：${totalMiss}分</div><div class="alert-b">あと <strong style="color:#A32D2D">${totalRem}分</strong> 不足${over>0?`　超過 <strong style="color:#854F0B">${over}分</strong>`:''}</div></div>`;}
+}
+function renderWeekend(){
+  const mpt=calcMPT();const rem=calcRemainingPerTask();
+  const totalMiss=Object.values(mpt).reduce((s,v)=>s+v,0);
+  const totalRem=Math.max(0,Object.values(rem).reduce((s,v)=>s+v,0));
+  const al=document.getElementById('wd-alert');
+  if(totalMiss===0){al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">今週は達成済み！</div><div class="alert-b ok">追加の自己研鑽は不要です。</div></div>`;}
+  else if(totalRem<=0){al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">全ての不足分を補填済み！</div><div class="alert-b ok">土日のスケジュールで${totalMiss}分を確保しました。</div></div>`;}
+  else{const over=Object.values(rem).reduce((s,v)=>s+(v<0?-v:0),0);al.innerHTML=`<div class="alert alert-warn"><div class="alert-t">今週の不足：${totalMiss}分</div><div class="alert-b">あと <strong style="color:#A32D2D">${totalRem}分</strong> 不足${over>0?`　超過 <strong style="color:#854F0B">${over}分</strong>`:''}</div></div>`;}
+  document.getElementById('sat-miss').innerHTML=missTableHTML(mpt);
+  document.getElementById('sun-miss').innerHTML=missTableHTML(mpt);
+  renderStudyBank(rem);renderFixedBank();renderList('sat');renderList('sun');
+}
+function saveWeekend(){sv('jkv6_wdi',wdItems);flash('wd-saved');}
+function showTab(t){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+t).classList.add('active');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['record','week','weekend'][i]===t));
+  if(t==='week')renderWeek();if(t==='weekend')renderWeekend();
+}
+document.querySelectorAll('.day-btn').forEach((b,i)=>{if(rec[i])b.classList.add('saved');});
+</script>
+</body>
+</html>
