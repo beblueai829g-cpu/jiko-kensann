@@ -206,7 +206,7 @@ const TASKS_TW=[{id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},{id:'joh
 const TASKS_OF=[{id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},{id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},{id:'read',name:'読書',planMins:30,time:'22:30〜23:00'}];
 const ALL_IDS=['eng','joho','prog','read'];
 const TMAP={};[...TASKS_TW,...TASKS_OF].forEach(t=>TMAP[t.id]=t);
-const FIXED_DEFAULTS=['床布団','楽天マガジン','YouTubeとガイカワサキをGeminiで','料理','中島さん質問','エニタイム'];
+const FIXED_DEFAULTS=['床布団','楽天マガジン','YouTubeとガイカワサキをGeminiで','料理','中島さん質問','エニタイム','図書館'];
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 function sv(k,v){localStorage.setItem(k,JSON.stringify(v))}
 let rec=ld('jkv6_rec',{});
