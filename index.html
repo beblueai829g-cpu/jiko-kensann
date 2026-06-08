@@ -230,7 +230,7 @@ function renderTasks(){
     const v=curMins[t.id]!==undefined&&curMins[t.id]!==''?curMins[t.id]:'';
     const pct=v===''?0:Math.min(100,Math.round(Number(v)/t.planMins*100));
     const dc=v===''?'dot-none':pct>=100?'dot-full':'dot-partial';
-    return `<div class="task-row"><div class="sdot ${dc}"></div><div class="task-meta"><div class="task-name">${t.name}</div><div class="task-plan">予定 ${t.planMins}分（${t.time}）</div></div><div class="mins-wrap"><input class="mins-input" type="number" inputmode="numeric" min="0" max="180" placeholder="0" value="${v}" oninput="setMins('${t.id}',this.value)"/><span style="font-size:12px;color:#7A7870">分</span></div></div>`;
+    return `<div class="task-row"><div class="sdot ${dc}"></div><div class="task-meta"><div class="task-name">${t.name}</div><div class="task-plan">予定 ${t.planMins}分（${t.time}）</div></div><div class="mins-wrap"><input class="mins-input" type="number" inputmode="numeric" min="0" max="180" placeholder="0" value="${v}" oninput="setMins('${t.id}',this.value)" onfocus="this.select()"/><span style="font-size:12px;color:#7A7870">分</span></div></div>`;
   }).join('');
 }
 function setMins(id,v){curMins[id]=v===''?'':Math.max(0,parseInt(v)||0);renderTasks();}
