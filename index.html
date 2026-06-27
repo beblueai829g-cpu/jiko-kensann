@@ -38,12 +38,8 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
 .mins-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0}
 .mins-input{width:54px;font-size:14px;font-family:'DM Mono',monospace;border:1px solid #E4E2DA;border-radius:6px;padding:5px 6px;background:#F7F6F2;color:#1A1916;text-align:center}
 .mins-input:focus{outline:none;border-color:#1D9E75}
-.btn-primary{width:100%;padding:12px;background:#1D9E75;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer}
-.btn-primary:active{opacity:.85}
 .btn-ghost{width:100%;padding:10px;background:none;color:#7A7870;border:1px solid #E4E2DA;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:8px}
-.saved-msg{font-size:12px;color:#0F6E56;margin-top:8px;opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:4px}
-.saved-msg.show{opacity:1}
-.metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
 .metric{background:#fff;border:1px solid #E4E2DA;border-radius:8px;padding:10px;text-align:center}
 .metric-val{font-size:18px;font-weight:500;font-family:'DM Mono',monospace}
 .metric-lbl{font-size:10px;color:#7A7870;margin-top:2px}
@@ -69,6 +65,7 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
 .chip:active{opacity:.7}
 .chip-study{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
 .chip-fixed{background:#fff;color:#1A1916;border-color:#E4E2DA}
+.chip-fixed.done{background:#E1F5EE;color:#085041;border-color:#5DCAA5;opacity:.7}
 .chip-done{opacity:.4;cursor:default}
 .chip-miss{font-size:11px;font-family:'DM Mono',monospace;font-weight:500}
 .chip-miss.red{color:#A32D2D}.chip-miss.ok{color:#1D9E75}.chip-miss.over{color:#854F0B}
@@ -89,9 +86,9 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
 .act-btn:active{background:#F7F6F2}
 .act-btn.danger{color:#A32D2D;border-color:#F09595}
 .item-times{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.tsel{font-size:12px;font-family:'DM Mono',monospace;border:1px solid #E4E2DA;border-radius:6px;padding:4px 6px;background:#fff;color:#1A1916;cursor:pointer}
-.s-study .tsel{border-color:#5DCAA5;background:rgba(255,255,255,.5)}
-.tsel:focus{outline:none;border-color:#1D9E75}
+.time-inp{width:58px;font-size:13px;font-family:'DM Mono',monospace;border:1px solid #E4E2DA;border-radius:6px;padding:5px 6px;background:#fff;color:#1A1916;text-align:center}
+.s-study .time-inp{border-color:#5DCAA5;background:rgba(255,255,255,.6)}
+.time-inp:focus{outline:none;border-color:#1D9E75}
 .time-sep{font-size:11px;color:#7A7870}
 .total-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#F7F6F2;margin-bottom:8px;font-size:12px;color:#7A7870}
 .total-bar strong{font-family:'DM Mono',monospace;color:#1A1916}
@@ -105,18 +102,19 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
 .popup-slot-btn{display:flex;align-items:center;gap:8px;width:100%;padding:11px 14px;font-size:14px;font-family:'DM Sans',sans-serif;background:#F7F6F2;border:1px solid #E4E2DA;border-radius:10px;cursor:pointer;color:#1A1916;margin-bottom:6px}
 .popup-slot-btn:active{background:#E4E2DA}
 .popup-cancel{display:block;width:100%;padding:11px;text-align:center;font-size:14px;font-family:'DM Sans',sans-serif;background:none;border:1px solid #E4E2DA;border-radius:10px;cursor:pointer;color:#7A7870;margin-top:4px}
+.reset-btn{width:100%;padding:9px;background:none;color:#7A7870;border:1px solid #E4E2DA;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="hdr"><h1>自己研鑽トラッカー</h1><p>平日記録 → 週間集計 → 土日計画</p></div>
+  <div class="hdr"><h1>自己研鑽トラッカー</h1><p>平日記録 → 土日計画</p></div>
   <div class="tab-bar">
-    <button class="tab active" onclick="showTab('record')"><i class="ti ti-pencil"></i> 今日の記録</button>
-    <button class="tab" onclick="showTab('week')"><i class="ti ti-chart-bar"></i> 週間集計</button>
-    <button class="tab" onclick="showTab('weekend')"><i class="ti ti-calendar"></i> 土日計画</button>
+    <button class="tab" id="tab-record" onclick="showTab('record')"><i class="ti ti-pencil"></i> 今日の記録</button>
+    <button class="tab" id="tab-weekend" onclick="showTab('weekend')"><i class="ti ti-calendar"></i> 土日計画</button>
   </div>
 
-  <div class="pane active" id="pane-record">
+  <!-- 記録 -->
+  <div class="pane" id="pane-record">
     <div class="slbl">曜日を選択</div>
     <div class="day-row" id="day-btns">
       <button class="day-btn" onclick="pickDay(0)">月</button>
@@ -134,22 +132,11 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
       <div class="slbl" style="margin-bottom:5px">自己研鑽タスク（実施した分数を入力）</div>
       <div id="task-list"><p style="font-size:13px;color:#7A7870;padding:6px 0">勤務形態を選択してください</p></div>
     </div>
-    <button class="btn-primary" onclick="saveDay()">この日を保存</button>
-    <div class="saved-msg" id="rec-saved"><i class="ti ti-check"></i> 保存しました</div>
-    <button class="btn-ghost" onclick="resetAll()"><i class="ti ti-refresh"></i> 週リセット（新しい週の開始）</button>
+    <div id="week-summary-box"></div>
+    <button class="reset-btn" onclick="resetAll()"><i class="ti ti-refresh"></i> 週リセット（新しい週の開始）</button>
   </div>
 
-  <div class="pane" id="pane-week">
-    <div class="metric-grid">
-      <div class="metric"><div class="metric-val" id="m-got" style="color:#1D9E75">0分</div><div class="metric-lbl">確保</div></div>
-      <div class="metric"><div class="metric-val" id="m-miss" style="color:#854F0B">0分</div><div class="metric-lbl">不足</div></div>
-      <div class="metric"><div class="metric-val" id="m-rate">—</div><div class="metric-lbl">達成率</div></div>
-    </div>
-    <div class="card"><div class="slbl">曜日別</div><div id="day-bars"></div></div>
-    <div class="card"><div class="slbl">タスク別（週合計）</div><div id="task-bars"></div></div>
-    <div id="week-msg"></div>
-  </div>
-
+  <!-- 土日計画 -->
   <div class="pane" id="pane-weekend">
     <div id="wd-alert"></div>
     <div class="bank-sec">
@@ -185,9 +172,7 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
         <button class="add-custom-btn" onclick="addCustom('sun')"><i class="ti ti-plus"></i> 追加</button>
       </div>
     </div>
-    <div style="height:12px"></div>
-    <button class="btn-primary" onclick="saveWeekend()">土日計画を保存</button>
-    <div class="saved-msg" id="wd-saved"><i class="ti ti-check"></i> 保存しました</div>
+    <div style="height:20px"></div>
   </div>
 </div>
 
@@ -202,111 +187,240 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
 </div>
 
 <script>
-const TASKS_TW=[{id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},{id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},{id:'prog',name:'プログラミング',planMins:60,time:'19:00〜20:00'},{id:'read',name:'読書',planMins:30,time:'22:30〜23:00'}];
-const TASKS_OF=[{id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},{id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},{id:'read',name:'読書',planMins:30,time:'22:30〜23:00'}];
-const ALL_IDS=['eng','joho','prog','read'];
+// ---- データ定義 ----
+const TASKS_TW=[
+  {id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},
+  {id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},
+  {id:'prog',name:'プログラミング',planMins:60,time:'19:00〜20:00'},
+];
+const TASKS_OF=[
+  {id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},
+  {id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},
+];
+const ALL_IDS=['eng','joho','prog'];
 const TMAP={};[...TASKS_TW,...TASKS_OF].forEach(t=>TMAP[t.id]=t);
-const FIXED_DEFAULTS=['床布団','楽天マガジン','YouTubeとガイカワサキをGeminiで','料理','中島さん質問','エニタイム','図書館'];
-function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
-function sv(k,v){localStorage.setItem(k,JSON.stringify(v))}
-let rec=ld('jkv6_rec',{});
-let wdItems=ld('jkv6_wdi',{sat:[],sun:[]});
+const FIXED_DEFAULTS=['床布団','楽天マガジン','YouTubeとガイカワサキ','エニタイム１','エニタイム２','図書館','本'];
+
+// ---- ストレージ ----
+function ld(k,d){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d}catch{return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+
+let rec=ld('jkv7_rec',{});
+let wdItems=ld('jkv7_wdi',{sat:[],sun:[]});
 let curDay=null,curType=null,curMins={},pendingChip=null;
+
 function getTasks(t){return t==='tw'?TASKS_TW:TASKS_OF}
+
+// ---- 自動保存 ----
+function autoSaveRec(){
+  if(curDay===null||!curType)return;
+  rec[curDay]={type:curType,mins:{...curMins}};
+  sv('jkv7_rec',rec);
+  updateDayBtns();
+  updateWeekSummary();
+}
+function autoSaveWd(){sv('jkv7_wdi',wdItems);}
+
+// ---- 記録タブ ----
 function pickDay(i){
   curDay=i;
-  document.querySelectorAll('.day-btn').forEach((b,j)=>{b.classList.toggle('active',j===i);if(rec[j]&&j!==i)b.classList.add('saved');else if(j!==i)b.classList.remove('saved');});
+  updateDayBtns();
   const r=rec[i];
   if(r){curType=r.type;curMins={...r.mins};}else{curType=null;curMins={};}
   document.getElementById('btn-tw').classList.toggle('active',curType==='tw');
   document.getElementById('btn-of').classList.toggle('active',curType==='office');
   renderTasks();
+  updateWeekSummary();
 }
-function pickType(t){if(curDay===null)return;curType=t;curMins={};document.getElementById('btn-tw').classList.toggle('active',t==='tw');document.getElementById('btn-of').classList.toggle('active',t==='office');renderTasks();}
+function updateDayBtns(){
+  document.querySelectorAll('.day-btn').forEach((b,j)=>{
+    b.classList.toggle('active',j===curDay);
+    b.classList.toggle('saved',!!rec[j]&&j!==curDay);
+  });
+}
+function pickType(t){
+  if(curDay===null)return;
+  curType=t;curMins={};
+  document.getElementById('btn-tw').classList.toggle('active',t==='tw');
+  document.getElementById('btn-of').classList.toggle('active',t==='office');
+  renderTasks();
+  autoSaveRec();
+}
 function renderTasks(){
   const el=document.getElementById('task-list');
   if(!curType){el.innerHTML='<p style="font-size:13px;color:#7A7870;padding:6px 0">勤務形態を選択してください</p>';return;}
   el.innerHTML=getTasks(curType).map(t=>{
     const v=curMins[t.id]!==undefined&&curMins[t.id]!==''?curMins[t.id]:'';
-    const pct=v===''?0:Math.min(100,Math.round(Number(v)/t.planMins*100));
-    const dc=v===''?'dot-none':pct>=100?'dot-full':'dot-partial';
-    return `<div class="task-row"><div class="sdot ${dc}"></div><div class="task-meta"><div class="task-name">${t.name}</div><div class="task-plan">予定 ${t.planMins}分（${t.time}）</div></div><div class="mins-wrap"><input class="mins-input" type="text" inputmode="numeric" pattern="[0-9]*" min="0" max="180" placeholder="0" value="${v}" oninput="updateDot('${t.id}',this.value)" onblur="setMins('${t.id}',this.value)" onfocus="this.select()" onclick="this.select()"/><span style="font-size:12px;color:#7A7870">分</span></div></div>`;
+    const n=Number(v)||0;
+    const pct=n===0?0:Math.min(100,Math.round(n/t.planMins*100));
+    const dc=n===0?'dot-none':pct>=100?'dot-full':'dot-partial';
+    return `<div class="task-row" id="row-${t.id}">
+      <div class="sdot ${dc}" id="dot-${t.id}"></div>
+      <div class="task-meta">
+        <div class="task-name">${t.name}</div>
+        <div class="task-plan">予定 ${t.planMins}分（${t.time}）</div>
+      </div>
+      <div class="mins-wrap">
+        <input class="mins-input" type="text" inputmode="numeric" pattern="[0-9]*"
+          placeholder="0" value="${v}"
+          onfocus="this.select()"
+          onclick="this.select()"
+          oninput="liveUpdateDot('${t.id}',this.value)"
+          onblur="commitMins('${t.id}',this.value)"
+        />
+        <span style="font-size:12px;color:#7A7870">分</span>
+      </div>
+    </div>`;
   }).join('');
 }
-function setMins(id,v){curMins[id]=v===''?'':Math.max(0,parseInt(v)||0);}
-function updateDot(id,v){const n=v===''?0:Math.max(0,parseInt(v)||0);const task=[...TASKS_TW,...TASKS_OF].find(t=>t.id===id);if(!task)return;const pct=n===0?0:Math.min(100,Math.round(n/task.planMins*100));const dc=n===0?'dot-none':pct>=100?'dot-full':'dot-partial';const rows=document.querySelectorAll('.task-row');rows.forEach(row=>{const inp=row.querySelector('.mins-input');if(inp&&inp.getAttribute('onblur').includes(id)){const dot=row.querySelector('.sdot');if(dot)dot.className='sdot '+dc;}});}
-function saveDay(){
-  if(curDay===null||!curType)return;
-  rec[curDay]={type:curType,mins:{...curMins}};sv('jkv6_rec',rec);
-  document.querySelectorAll('.day-btn')[curDay].classList.remove('active');
-  document.querySelectorAll('.day-btn')[curDay].classList.add('saved');
-  flash('rec-saved');
+
+function liveUpdateDot(id,v){
+  const n=Math.max(0,parseInt(v)||0);
+  const task=TMAP[id];if(!task)return;
+  const pct=n===0?0:Math.min(100,Math.round(n/task.planMins*100));
+  const dc=n===0?'dot-none':pct>=100?'dot-full':'dot-partial';
+  const dot=document.getElementById('dot-'+id);
+  if(dot)dot.className='sdot '+dc;
 }
-function resetAll(){
-  if(!confirm('今週のデータをリセットしますか？'))return;
-  rec={};wdItems={sat:[],sun:[]};sv('jkv6_rec',rec);sv('jkv6_wdi',wdItems);
-  curDay=null;curType=null;curMins={};
-  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active','saved'));
-  document.getElementById('btn-tw').classList.remove('active');document.getElementById('btn-of').classList.remove('active');
-  renderTasks();
+function commitMins(id,v){
+  curMins[id]=v===''?'':Math.max(0,parseInt(v)||0);
+  autoSaveRec();
 }
-function flash(id){const e=document.getElementById(id);e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000);}
+
+// ---- 週集計（記録タブ内） ----
 function calcWeek(){
-  let totPlan=0,totGot=0;const tp={},tg={};ALL_IDS.forEach(id=>{tp[id]=0;tg[id]=0;});
-  for(let i=0;i<5;i++){const r=rec[i];if(!r)continue;getTasks(r.type).forEach(t=>{tp[t.id]+=t.planMins;totPlan+=t.planMins;const g=Math.min(Number(r.mins[t.id])||0,t.planMins);tg[t.id]+=g;totGot+=g;});}
+  let totPlan=0,totGot=0;const tp={},tg={};
+  ALL_IDS.forEach(id=>{tp[id]=0;tg[id]=0;});
+  for(let i=0;i<5;i++){
+    const r=rec[i];if(!r)continue;
+    getTasks(r.type).forEach(t=>{
+      tp[t.id]+=t.planMins;totPlan+=t.planMins;
+      // 予定より多く実施した分も加算（週トータルで相殺）
+      const g=Math.max(0,Number(r.mins[t.id])||0);
+      tg[t.id]+=g;totGot+=g;
+    });
+  }
   return{totPlan,totGot,tp,tg};
 }
-function calcMPT(){const{tp,tg}=calcWeek();const m={};ALL_IDS.forEach(id=>m[id]=Math.max(0,(tp[id]||0)-(tg[id]||0)));return m;}
-function renderWeek(){
-  const{totPlan,totGot,tp,tg}=calcWeek();const miss=totPlan-totGot;const rate=totPlan>0?Math.round(totGot/totPlan*100):null;
-  document.getElementById('m-got').textContent=totGot+'分';
-  document.getElementById('m-miss').textContent=Math.max(0,miss)+'分';
-  document.getElementById('m-rate').textContent=rate!==null?rate+'%':'—';
-  document.getElementById('m-rate').style.color=rate>=100?'#1D9E75':rate>=60?'#1A1916':'#854F0B';
-  const DAYS=['月','火','水','木','金'];
-  document.getElementById('day-bars').innerHTML=DAYS.map((nm,i)=>{
-    const r=rec[i];if(!r)return `<div class="bar-wrap"><div class="bar-labels"><span>${nm}曜日</span><span>未記録</span></div><div class="bar-track"><div class="bar-fill zero"></div></div></div>`;
-    const pl=getTasks(r.type).reduce((s,t)=>s+t.planMins,0);const gt=getTasks(r.type).reduce((s,t)=>s+Math.min(Number(r.mins[t.id])||0,t.planMins),0);const pct=pl>0?Math.round(gt/pl*100):0;const cls=pct>=100?'':pct>0?'partial':'zero';
-    return `<div class="bar-wrap"><div class="bar-labels"><span>${nm}（${r.type==='tw'?'TW':'出社'}）</span><span>${gt}/${pl}分（${pct}%）</span></div><div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div></div>`;
-  }).join('');
-  document.getElementById('task-bars').innerHTML=ALL_IDS.map(id=>{if(!tp[id])return '';const pct=Math.round(tg[id]/tp[id]*100);const cls=pct>=100?'':pct>0?'partial':'zero';return `<div class="bar-wrap"><div class="bar-labels"><span>${TMAP[id].name}</span><span>${tg[id]}/${tp[id]}分</span></div><div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div></div>`;}).join('');
-  const wm=document.getElementById('week-msg');if(!totPlan){wm.innerHTML='';return;}
-  wm.innerHTML=miss<=0?`<div class="alert alert-ok"><div class="alert-t ok">今週は全て達成！</div><div class="alert-b ok">全ての自己研鑽時間を確保できました。</div></div>`:`<div class="alert alert-warn"><div class="alert-t">今週の不足：${miss}分</div><div class="alert-b">土日計画タブで補充しましょう。</div></div>`;
+function calcMPT(){
+  const{tp,tg}=calcWeek();
+  const m={};
+  ALL_IDS.forEach(id=>m[id]=Math.max(0,(tp[id]||0)-(tg[id]||0)));
+  return m;
 }
-function timeToMins(t){if(!t)return null;const p=t.split(':');if(p.length<2)return null;return parseInt(p[0])*60+parseInt(p[1]);}
-function minsToTime(m){return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
-function buildTimeOptions(selected){
-  let opts='<option value="">--</option>';
-  for(let h=6;h<24;h++)for(let m=0;m<60;m+=15){const t=minsToTime(h*60+m);opts+=`<option value="${t}"${selected===t?' selected':''}>${t}</option>`;}
-  return opts;
+function updateWeekSummary(){
+  const{totPlan,totGot}=calcWeek();
+  const miss=Math.max(0,totPlan-totGot);
+  const rate=totPlan>0?Math.round(Math.min(100,totGot/totPlan*100)):0;
+  const el=document.getElementById('week-summary-box');
+  if(!totPlan){el.innerHTML='';return;}
+  if(miss===0){
+    el.innerHTML=`<div class="alert alert-ok" style="margin-top:10px"><div class="alert-t ok">今週は全て達成！</div><div class="alert-b ok">達成率 ${rate}%</div></div>`;
+  }else{
+    el.innerHTML=`<div class="alert alert-warn" style="margin-top:10px"><div class="alert-t">今週の不足：${miss}分</div><div class="alert-b">達成率 ${rate}%　金曜後に土日計画を立てよう</div></div>`;
+  }
 }
-function calcDur(s,e){const sm=timeToMins(s),em=timeToMins(e);if(sm===null||em===null||em<=sm)return null;return em-sm;}
+
+function resetAll(){
+  if(!confirm('今週のデータをリセットしますか？'))return;
+  rec={};wdItems={sat:[],sun:[]};
+  sv('jkv7_rec',rec);sv('jkv7_wdi',wdItems);
+  curDay=null;curType=null;curMins={};
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active','saved'));
+  document.getElementById('btn-tw').classList.remove('active');
+  document.getElementById('btn-of').classList.remove('active');
+  renderTasks();
+  updateWeekSummary();
+}
+
+// ---- 土日計画 ----
+function timeToMins(t){
+  if(!t)return null;
+  const p=t.split(':');
+  if(p.length<2)return null;
+  const h=parseInt(p[0]),m=parseInt(p[1]);
+  if(isNaN(h)||isNaN(m))return null;
+  return h*60+m;
+}
+function calcDur(s,e){
+  const sm=timeToMins(s),em=timeToMins(e);
+  if(sm===null||em===null||em<=sm)return null;
+  return em-sm;
+}
 function calcStudyScheduledPerTask(){
   const sc={};ALL_IDS.forEach(id=>sc[id]=0);
-  ['sat','sun'].forEach(d=>(wdItems[d]||[]).forEach(item=>{if(item.type==='study'&&item.taskId){const d2=calcDur(item.startTime,item.endTime);if(d2)sc[item.taskId]=(sc[item.taskId]||0)+d2;}}));
+  ['sat','sun'].forEach(d=>(wdItems[d]||[]).forEach(item=>{
+    if(item.type==='study'&&item.taskId){
+      const dur=calcDur(item.startTime,item.endTime);
+      if(dur)sc[item.taskId]=(sc[item.taskId]||0)+dur;
+    }
+  }));
   return sc;
 }
-function calcRemainingPerTask(){const mpt=calcMPT();const sc=calcStudyScheduledPerTask();const r={};ALL_IDS.forEach(id=>r[id]=(mpt[id]||0)-(sc[id]||0));return r;}
-function missTableHTML(mpt){return ALL_IDS.map(id=>{if(!TMAP[id])return '';const m=mpt[id]||0;return `<tr><td class="miss-name">${TMAP[id].name}</td><td class="miss-val ${m>0?'red':'ok'}">${m>0?'−'+m+'分':'✓'}</td></tr>`;}).join('');}
+function calcFixedScheduledCount(){
+  // 固定予定がスケジュールに何件入っているか（名前ベース）
+  const names=new Set();
+  ['sat','sun'].forEach(d=>(wdItems[d]||[]).forEach(item=>{
+    if(item.type==='fixed')names.add(item.name);
+  }));
+  return names;
+}
+function calcRemainingPerTask(){
+  const mpt=calcMPT();const sc=calcStudyScheduledPerTask();
+  const r={};ALL_IDS.forEach(id=>r[id]=(mpt[id]||0)-(sc[id]||0));
+  return r;
+}
+function missTableHTML(mpt){
+  return ALL_IDS.map(id=>{
+    if(!TMAP[id])return '';
+    const m=mpt[id]||0;
+    return `<tr><td class="miss-name">${TMAP[id].name}</td><td class="miss-val ${m>0?'red':'ok'}">${m>0?'−'+m+'分':'✓'}</td></tr>`;
+  }).join('');
+}
+
 function renderStudyBank(rem){
   document.getElementById('study-bank').innerHTML=ALL_IDS.map(id=>{
-    if(!TMAP[id])return '';const mpt=calcMPT();const base=mpt[id]||0;
+    if(!TMAP[id])return '';
+    const mpt=calcMPT();const base=mpt[id]||0;
     if(base===0)return `<span class="chip chip-study chip-done">${TMAP[id].name} <i class="ti ti-check"></i></span>`;
     const r=rem[id]||0;
     const badge=r>0?`<span class="chip-miss red">−${r}分</span>`:r===0?`<span class="chip-miss ok">補填済</span>`:`<span class="chip-miss over">+${-r}分超過</span>`;
     return `<span class="chip chip-study" onclick="chipTap('study','${id}','${TMAP[id].name}',${Math.max(0,r)})">${TMAP[id].name} ${badge}</span>`;
   }).join('');
 }
-function renderFixedBank(){document.getElementById('fixed-bank').innerHTML=FIXED_DEFAULTS.map(name=>`<span class="chip chip-fixed" onclick="chipTap('fixed','${name}','${name}',0)">${name}</span>`).join('');}
+
+function renderFixedBank(){
+  const scheduledNames=calcFixedScheduledCount();
+  document.getElementById('fixed-bank').innerHTML=FIXED_DEFAULTS.map(name=>{
+    const done=scheduledNames.has(name);
+    return `<span class="chip chip-fixed${done?' done':''}" onclick="chipTap('fixed','${name}','${name}',0)">
+      ${name}${done?' <span class="chip-miss ok"><i class="ti ti-check"></i>補填済</span>':''}
+    </span>`;
+  }).join('');
+}
+
 function renderTotalBar(day){
-  const items=wdItems[day]||[];const el=document.getElementById(day+'-total-bar');
+  const items=wdItems[day]||[];
+  const el=document.getElementById(day+'-total-bar');
   let total=0;items.forEach(item=>{const d=calcDur(item.startTime,item.endTime);if(d)total+=d;});
   if(!total){el.innerHTML='';return;}
   const h=Math.floor(total/60),m=total%60;
   el.innerHTML=`<div class="total-bar"><span>予定合計</span><strong>${h>0?h+'時間':''}${m>0?m+'分':''}</strong></div>`;
 }
+
+function normalizeTime(v){
+  v=v.replace(/[^\d]/g,'');
+  if(v.length===0)return '';
+  if(v.length===1)return `0${v}:00`;
+  if(v.length===2)return `${v.padStart(2,'0')}:00`;
+  if(v.length===3)return `0${v[0]}:${v.slice(1)}`;
+  if(v.length===4)return `${v.slice(0,2)}:${v.slice(2)}`;
+  return v.slice(0,2)+':'+v.slice(2,4);
+}
+
 function renderList(day){
-  const el=document.getElementById(day+'-list');const items=wdItems[day]||[];
+  const el=document.getElementById(day+'-list');
+  const items=wdItems[day]||[];
   if(items.length===0){el.innerHTML='<p style="font-size:12px;color:#7A7870;padding:4px 0 8px">まだ予定がありません</p>';renderTotalBar(day);return;}
   el.innerHTML=items.map((item,ii)=>{
     const cls=item.type==='study'?'s-study':item.type==='fixed'?'s-fixed':'s-custom';
@@ -321,22 +435,55 @@ function renderList(day){
         </div>
       </div>
       <div class="item-times">
-        <select class="tsel" onchange="updTime('${day}',${ii},'startTime',this.value)">${buildTimeOptions(item.startTime||'')}</select>
+        <input class="time-inp" type="text" inputmode="numeric" placeholder="09:00"
+          value="${item.startTime||''}"
+          onfocus="this.select()" onclick="this.select()"
+          onblur="commitTime('${day}',${ii},'startTime',this.value)"
+          aria-label="開始時刻"/>
         <span class="time-sep">〜</span>
-        <select class="tsel" onchange="updTime('${day}',${ii},'endTime',this.value)">${buildTimeOptions(item.endTime||'')}</select>
+        <input class="time-inp" type="text" inputmode="numeric" placeholder="10:00"
+          value="${item.endTime||''}"
+          onfocus="this.select()" onclick="this.select()"
+          onblur="commitTime('${day}',${ii},'endTime',this.value)"
+          aria-label="終了時刻"/>
       </div>
     </div>`;
   }).join('');
   renderTotalBar(day);
 }
-function sortItems(day){wdItems[day]=(wdItems[day]||[]).sort((a,b)=>{const am=timeToMins(a.startTime),bm=timeToMins(b.startTime);if(am===null&&bm===null)return 0;if(am===null)return 1;if(bm===null)return -1;return am-bm;});}
-function updTime(day,ii,field,val){wdItems[day][ii][field]=val;sortItems(day);renderList(day);const rem=calcRemainingPerTask();renderStudyBank(rem);refreshWDAlert();}
-function cloneItem(day,ii){const o=wdItems[day][ii];wdItems[day].splice(ii+1,0,{...o});renderList(day);refreshWDAlert();}
-function rmItem(day,ii){wdItems[day].splice(ii,1);renderList(day);const rem=calcRemainingPerTask();renderStudyBank(rem);refreshWDAlert();}
-function addCustom(day){
-  const inp=document.getElementById(day+'-custom-inp');const name=inp.value.trim();if(!name)return;
-  wdItems[day].push({type:'custom',name,startTime:'',endTime:''});sortItems(day);renderList(day);inp.value='';
+
+function sortItems(day){
+  wdItems[day]=(wdItems[day]||[]).sort((a,b)=>{
+    const am=timeToMins(a.startTime),bm=timeToMins(b.startTime);
+    if(am===null&&bm===null)return 0;if(am===null)return 1;if(bm===null)return -1;return am-bm;
+  });
 }
+
+function commitTime(day,ii,field,val){
+  const norm=val.trim()===''?'':normalizeTime(val);
+  wdItems[day][ii][field]=norm;
+  sortItems(day);renderList(day);
+  const rem=calcRemainingPerTask();renderStudyBank(rem);
+  refreshWDAlert();autoSaveWd();
+}
+
+function cloneItem(day,ii){
+  const o=wdItems[day][ii];wdItems[day].splice(ii+1,0,{...o});
+  renderList(day);refreshWDAlert();autoSaveWd();
+}
+function rmItem(day,ii){
+  wdItems[day].splice(ii,1);renderList(day);
+  const rem=calcRemainingPerTask();renderStudyBank(rem);renderFixedBank();
+  refreshWDAlert();autoSaveWd();
+}
+function addCustom(day){
+  const inp=document.getElementById(day+'-custom-inp');
+  const name=inp.value.trim();if(!name)return;
+  wdItems[day].push({type:'custom',name,startTime:'',endTime:''});
+  sortItems(day);renderList(day);inp.value='';
+  autoSaveWd();
+}
+
 function chipTap(type,id,name,mins){
   pendingChip={type,id,name,mins,taskId:type==='study'?id:null};
   document.getElementById('popup-title').textContent=`「${name}」をどちらに追加しますか？`;
@@ -351,39 +498,74 @@ function addChipTo(day){
   const item={type:pendingChip.type,taskId:pendingChip.taskId,name:pendingChip.name,startTime:'',endTime:''};
   if(day==='both'){wdItems['sat'].push({...item});wdItems['sun'].push({...item});}
   else{wdItems[day].push({...item});}
-  sortItems('sat');sortItems('sun');renderList('sat');renderList('sun');
-  const rem=calcRemainingPerTask();renderStudyBank(rem);refreshWDAlert();closePopup();
+  sortItems('sat');sortItems('sun');
+  renderList('sat');renderList('sun');
+  const rem=calcRemainingPerTask();renderStudyBank(rem);renderFixedBank();
+  refreshWDAlert();autoSaveWd();closePopup();
 }
 function closePopup(){document.getElementById('popup').style.display='none';pendingChip=null;}
+
 function refreshWDAlert(){
   const mpt=calcMPT();const rem=calcRemainingPerTask();
   const totalMiss=Object.values(mpt).reduce((s,v)=>s+v,0);
   const totalRem=Math.max(0,Object.values(rem).reduce((s,v)=>s+v,0));
   const al=document.getElementById('wd-alert');
-  if(totalMiss===0){al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">今週は達成済み！</div><div class="alert-b ok">追加の自己研鑽は不要です。</div></div>`;}
-  else if(totalRem<=0){al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">全ての不足分を補填済み！</div><div class="alert-b ok">土日のスケジュールで${totalMiss}分を確保しました。</div></div>`;}
-  else{const over=Object.values(rem).reduce((s,v)=>s+(v<0?-v:0),0);al.innerHTML=`<div class="alert alert-warn"><div class="alert-t">今週の不足：${totalMiss}分</div><div class="alert-b">あと <strong style="color:#A32D2D">${totalRem}分</strong> 不足${over>0?`　超過 <strong style="color:#854F0B">${over}分</strong>`:''}</div></div>`;}
+  if(totalMiss===0){
+    al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">今週は達成済み！</div><div class="alert-b ok">追加の自己研鑽は不要です。</div></div>`;
+  }else if(totalRem<=0){
+    al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">全ての不足分を補填済み！</div><div class="alert-b ok">土日のスケジュールで${totalMiss}分を確保しました。</div></div>`;
+  }else{
+    const over=Object.values(rem).reduce((s,v)=>s+(v<0?-v:0),0);
+    al.innerHTML=`<div class="alert alert-warn"><div class="alert-t">今週の不足：${totalMiss}分</div><div class="alert-b">あと <strong style="color:#A32D2D">${totalRem}分</strong> 不足${over>0?`　超過 <strong style="color:#854F0B">${over}分</strong>`:''}</div></div>`;
+  }
 }
+
 function renderWeekend(){
   const mpt=calcMPT();const rem=calcRemainingPerTask();
-  const totalMiss=Object.values(mpt).reduce((s,v)=>s+v,0);
-  const totalRem=Math.max(0,Object.values(rem).reduce((s,v)=>s+v,0));
-  const al=document.getElementById('wd-alert');
-  if(totalMiss===0){al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">今週は達成済み！</div><div class="alert-b ok">追加の自己研鑽は不要です。</div></div>`;}
-  else if(totalRem<=0){al.innerHTML=`<div class="alert alert-ok"><div class="alert-t ok">全ての不足分を補填済み！</div><div class="alert-b ok">土日のスケジュールで${totalMiss}分を確保しました。</div></div>`;}
-  else{const over=Object.values(rem).reduce((s,v)=>s+(v<0?-v:0),0);al.innerHTML=`<div class="alert alert-warn"><div class="alert-t">今週の不足：${totalMiss}分</div><div class="alert-b">あと <strong style="color:#A32D2D">${totalRem}分</strong> 不足${over>0?`　超過 <strong style="color:#854F0B">${over}分</strong>`:''}</div></div>`;}
+  refreshWDAlert();
   document.getElementById('sat-miss').innerHTML=missTableHTML(mpt);
   document.getElementById('sun-miss').innerHTML=missTableHTML(mpt);
-  renderStudyBank(rem);renderFixedBank();renderList('sat');renderList('sun');
+  renderStudyBank(rem);renderFixedBank();
+  renderList('sat');renderList('sun');
 }
-function saveWeekend(){sv('jkv6_wdi',wdItems);flash('wd-saved');}
+
+// ---- タブ切り替え＆スマート初期表示 ----
 function showTab(t){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('pane-'+t).classList.add('active');
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['record','week','weekend'][i]===t));
-  if(t==='week')renderWeek();if(t==='weekend')renderWeekend();
+  document.getElementById('tab-record').classList.toggle('active',t==='record');
+  document.getElementById('tab-weekend').classList.toggle('active',t==='weekend');
+  if(t==='weekend')renderWeekend();
+  sv('jkv7_lasttab',t);
 }
-document.querySelectorAll('.day-btn').forEach((b,i)=>{if(rec[i])b.classList.add('saved');});
+
+function smartOpen(){
+  // 土日計画タブを最後に開いていたか
+  const lastTab=ld('jkv7_lasttab','record');
+
+  // 記録タブの場合：入力済みの翌日を自動選択
+  const recordedDays=Object.keys(rec).map(Number);
+  if(lastTab==='weekend'){
+    showTab('weekend');
+  }else{
+    showTab('record');
+    // 最後に記録した日の翌日、なければ月曜
+    if(recordedDays.length>0){
+      const maxDay=Math.max(...recordedDays);
+      const nextDay=Math.min(maxDay+1,4);
+      // まだ記録していない日を開く
+      if(!rec[nextDay]){pickDay(nextDay);}
+      else{pickDay(maxDay);}
+    }else{
+      pickDay(0);
+    }
+  }
+}
+
+// ---- 初期化 ----
+updateDayBtns();
+smartOpen();
+updateWeekSummary();
 </script>
 </body>
 </html>
