@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>筋トレトラッカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-height:100vh;font-size:15px}
+.app{max-width:480px;margin:0 auto;padding:16px 16px 80px}
+h1{font-size:18px;font-weight:500;margin-bottom:4px}
+.sub{font-size:12px;color:#7A7870;margin-bottom:20px}
+.slbl{font-size:11px;font-weight:500;color:#7A7870;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.group{margin-bottom:24px}
+.group-title{font-size:15px;font-weight:500;color:#1A1916;margin-bottom:10px}
+.bar-wrap{margin-bottom:8px}
+.bar-row{display:flex;justify-content:space-between;font-size:12px;color:#7A7870;margin-bottom:3px}
+.bar-track{height:6px;background:#E4E2DA;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.section-lbl{font-size:11px;font-weight:500;color:#7A7870;text-transform:uppercase;letter-spacing:.4px;margin:10px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.gym-btn{padding:10px 6px;font-size:13px;font-family:'DM Sans',sans-serif;border-radius:8px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;border:1px solid #E4E2DA;background:#fff;color:#7A7870}
+.gym-btn.done{border-color:#5DCAA5;background:#E1F5EE;color:#085041}
+.gym-btn i{font-size:15px;flex-shrink:0}
+.divider{height:1px;background:#E4E2DA;margin:20px 0}
+.reset-btn{width:100%;padding:10px;background:none;color:#7A7870;border:1px solid #E4E2DA;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>筋トレトラッカー</h1>
+  <p class="sub">タップで完了/未完了を切り替え</p>
+  <div id="gym-root"></div>
+  <button class="reset-btn" id="reset-btn"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>週リセット</button>
+</div>
+<script>
+var GYM_GROUPS=[
+  {
+    label:'必須メニュー１',
+    must:[
+      {id:'chest1',name:'胸１'},{id:'chest2',name:'胸２'},{id:'chest3',name:'胸３'},
+      {id:'bi1',name:'二頭１'},{id:'bi2',name:'二頭２'},{id:'bi3',name:'二頭３'},
+      {id:'abs',name:'腹筋'},{id:'legs',name:'脚'},{id:'back',name:'背中'}
+    ],
+    opt:[
+      {id:'sh4',name:'肩４'},{id:'tri4',name:'三頭４'}
+    ]
+  },
+  {
+    label:'必須メニュー２',
+    must:[
+      {id:'sh1',name:'肩１'},{id:'sh2',name:'肩２'},{id:'sh3',name:'肩３'},
+      {id:'tri1',name:'三頭１'},{id:'tri2',name:'三頭２'},{id:'tri3',name:'三頭３'},
+      {id:'run',name:'ラン'}
+    ],
+    opt:[
+      {id:'chest4',name:'胸４'},{id:'bi4',name:'二頭４'}
+    ]
+  }
+];
+
+function ld(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var gymDone=ld('gym_done',{});
+
+function toggle(id){
+  gymDone[id]=!gymDone[id];
+  sv('gym_done',gymDone);
+  render();
+}
+
+function render(){
+  var root=document.getElementById('gym-root');
+  root.innerHTML='';
+
+  GYM_GROUPS.forEach(function(group,gi){
+    var mustDone=group.must.filter(function(g){return gymDone[g.id];}).length;
+    var optDone=group.opt.filter(function(g){return gymDone[g.id];}).length;
+
+    if(gi>0){
+      var div=document.createElement('div');
+      div.className='divider';
+      root.appendChild(div);
+    }
+
+    // Group title
+    var title=document.createElement('div');
+    title.className='group-title';
+    title.textContent=group.label;
+    root.appendChild(title);
+
+    // Progress bars
+    function makeBar(done,total,label){
+      var pct=total>0?Math.round(done/total*100):0;
+      var color=pct>=100?'#1D9E75':'#EF9F27';
+      var wrap=document.createElement('div');
+      wrap.className='bar-wrap';
+      var row=document.createElement('div');
+      row.className='bar-row';
+      row.innerHTML='<span>'+label+'</span><span>'+done+'/'+total+'</span>';
+      var track=document.createElement('div');
+      track.className='bar-track';
+      var fill=document.createElement('div');
+      fill.className='bar-fill';
+      fill.style.width=pct+'%';
+      fill.style.background=color;
+      track.appendChild(fill);
+      wrap.appendChild(row);
+      wrap.appendChild(track);
+      return wrap;
+    }
+    root.appendChild(makeBar(mustDone,group.must.length,'必須'));
+    root.appendChild(makeBar(optDone,group.opt.length,'余裕があれば'));
+
+    // Must buttons
+    var lbl1=document.createElement('div');
+    lbl1.className='section-lbl';
+    lbl1.textContent='必須';
+    root.appendChild(lbl1);
+
+    var grid1=document.createElement('div');
+    grid1.className='grid';
+    group.must.forEach(function(g){
+      var btn=document.createElement('button');
+      btn.className='gym-btn'+(gymDone[g.id]?' done':'');
+      btn.innerHTML='<i class="ti '+(gymDone[g.id]?'ti-circle-check':'ti-circle')+'" aria-hidden="true"></i><span>'+g.name+'</span>';
+      btn.addEventListener('click',function(){toggle(g.id);});
+      grid1.appendChild(btn);
+    });
+    root.appendChild(grid1);
+
+    // Opt buttons
+    var lbl2=document.createElement('div');
+    lbl2.className='section-lbl';
+    lbl2.textContent='余裕があれば';
+    root.appendChild(lbl2);
+
+    var grid2=document.createElement('div');
+    grid2.className='grid';
+    group.opt.forEach(function(g){
+      var btn=document.createElement('button');
+      btn.className='gym-btn'+(gymDone[g.id]?' done':'');
+      btn.innerHTML='<i class="ti '+(gymDone[g.id]?'ti-circle-check':'ti-circle')+'" aria-hidden="true"></i><span>'+g.name+'</span>';
+      btn.addEventListener('click',function(){toggle(g.id);});
+      grid2.appendChild(btn);
+    });
+    root.appendChild(grid2);
+  });
+}
+
+document.getElementById('reset-btn').addEventListener('click',function(){
+  if(!confirm('今週の筋トレ記録をリセットしますか？'))return;
+  gymDone={};sv('gym_done',gymDone);render();
+});
+
+render();
+</script>
+</body>
+</html>

@@ -111,7 +111,6 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
   <div class="tab-bar">
     <button class="tab" id="tab-record" onclick="showTab('record')"><i class="ti ti-pencil"></i> 今日の記録</button>
     <button class="tab" id="tab-weekend" onclick="showTab('weekend')"><i class="ti ti-calendar"></i> 土日計画</button>
-    <button class="tab" id="tab-gym" onclick="showTab('gym')"><i class="ti ti-barbell"></i> 筋トレ</button>
   </div>
 
   <!-- 記録 -->
@@ -184,12 +183,6 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
       <div id="popup-slots"></div>
       <button class="popup-cancel" onclick="closePopup()">キャンセル</button>
     </div>
-  </div>
-  <!-- 筋トレ -->
-  <div class="pane" id="pane-gym">
-    <div class="slbl" style="margin-bottom:12px">今週のトレーニング</div>
-    <div id="gym-grid"></div>
-    <button class="reset-btn" style="margin-top:16px" onclick="resetGym()"><i class="ti ti-refresh"></i> 筋トレリセット</button>
   </div>
 </div>
 
@@ -542,9 +535,7 @@ function showTab(t){
   document.getElementById('pane-'+t).classList.add('active');
   document.getElementById('tab-record').classList.toggle('active',t==='record');
   document.getElementById('tab-weekend').classList.toggle('active',t==='weekend');
-  document.getElementById('tab-gym').classList.toggle('active',t==='gym');
   if(t==='weekend')renderWeekend();
-  if(t==='gym')renderGym();
   sv('jkv7_lasttab',t);
 }
 
@@ -569,91 +560,6 @@ function smartOpen(){
       pickDay(0);
     }
   }
-}
-
-// ---- 筋トレ ----
-const GYM_GROUPS=[
-  {
-    label:'必須メニュー１',
-    must:[
-      {id:'chest1',name:'胸１'},{id:'chest2',name:'胸２'},{id:'chest3',name:'胸３'},
-      {id:'bi1',name:'二頭１'},{id:'bi2',name:'二頭２'},{id:'bi3',name:'二頭３'},
-      {id:'abs',name:'腹筋'},{id:'legs',name:'脚'},{id:'back',name:'背中'},
-    ],
-    opt:[
-      {id:'sh4',name:'肩４'},{id:'tri4',name:'三頭４'},
-    ],
-  },
-  {
-    label:'必須メニュー２',
-    must:[
-      {id:'sh1',name:'肩１'},{id:'sh2',name:'肩２'},{id:'sh3',name:'肩３'},
-      {id:'tri1',name:'三頭１'},{id:'tri2',name:'三頭２'},{id:'tri3',name:'三頭３'},
-      {id:'run',name:'ラン'},
-    ],
-    opt:[
-      {id:'chest4',name:'胸４'},{id:'bi4',name:'二頭４'},
-    ],
-  },
-];
-
-let gymDone=ld('jkv7_gym',{});
-
-function toggleGym(id){
-  gymDone[id]=!gymDone[id];
-  sv('jkv7_gym',gymDone);
-  renderGym();
-}
-function resetGym(){
-  if(!confirm('筋トレの記録をリセットしますか？'))return;
-  gymDone={};sv('jkv7_gym',gymDone);renderGym();
-}
-
-function renderGym(){
-  var el=document.getElementById('gym-grid');
-  el.innerHTML='';
-  function makeBar(done,total,label){
-    var pct=total>0?Math.round(done/total*100):0;
-    var color=pct>=100?'#1D9E75':'#EF9F27';
-    var wrap=document.createElement('div');
-    wrap.style.marginBottom='10px';
-    wrap.innerHTML='<div style="display:flex;justify-content:space-between;font-size:12px;color:#7A7870;margin-bottom:3px"><span>'+label+'</span><span>'+done+'/'+total+'</span></div>'
-      +'<div style="height:6px;background:#F7F6F2;border-radius:3px;overflow:hidden">'
-      +'<div style="height:100%;border-radius:3px;background:'+color+';width:'+pct+'%;transition:width .3s"></div></div>';
-    return wrap;
-  }
-  function makeBtn(g){
-    var done=!!gymDone[g.id];
-    var btn=document.createElement('button');
-    btn.style.cssText='padding:10px 8px;font-size:13px;font-family:sans-serif;border-radius:8px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;border:1px solid '+(done?'#5DCAA5':'#E4E2DA')+';background:'+(done?'#E1F5EE':'#fff')+';color:'+(done?'#085041':'#7A7870');
-    btn.innerHTML='<i class="ti '+(done?'ti-circle-check':'ti-circle')+'" style="font-size:15px;flex-shrink:0" aria-hidden="true"></i><span>'+g.name+'</span>';
-    btn.addEventListener('click',function(){toggleGym(g.id);});
-    return btn;
-  }
-  GYM_GROUPS.forEach(function(group,gi){
-    var mustDone=group.must.filter(function(g){return gymDone[g.id];}).length;
-    var optDone=group.opt.filter(function(g){return gymDone[g.id];}).length;
-    if(gi>0){var sep=document.createElement('div');sep.style.cssText='height:1px;background:#E4E2DA;margin:16px 0';el.appendChild(sep);}
-    var title=document.createElement('div');
-    title.style.cssText='font-size:14px;font-weight:500;color:#1A1916;margin-bottom:10px';
-    title.textContent=group.label;el.appendChild(title);
-    el.appendChild(makeBar(mustDone,group.must.length,'必須'));
-    el.appendChild(makeBar(optDone,group.opt.length,'余裕があれば'));
-    var lbl1=document.createElement('div');
-    lbl1.style.cssText='font-size:11px;font-weight:500;color:#7A7870;text-transform:uppercase;letter-spacing:.4px;margin:10px 0 8px';
-    lbl1.textContent='必須';el.appendChild(lbl1);
-    var grid1=document.createElement('div');
-    grid1.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px';
-    group.must.forEach(function(g){grid1.appendChild(makeBtn(g));});
-    el.appendChild(grid1);
-    var lbl2=document.createElement('div');
-    lbl2.style.cssText='font-size:11px;font-weight:500;color:#7A7870;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px';
-    lbl2.textContent='余裕があれば';el.appendChild(lbl2);
-    var grid2=document.createElement('div');
-    grid2.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:6px';
-    group.opt.forEach(function(g){grid2.appendChild(makeBtn(g));});
-    el.appendChild(grid2);
-  });
 }
 
 // ---- 初期化 ----
