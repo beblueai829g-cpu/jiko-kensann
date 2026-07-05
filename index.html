@@ -190,14 +190,12 @@ body{font-family:'DM Sans',sans-serif;background:#F7F6F2;color:#1A1916;min-heigh
 // ---- データ定義 ----
 const TASKS_TW=[
   {id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},
-  {id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},
   {id:'prog',name:'プログラミング',planMins:60,time:'19:00〜20:00'},
 ];
 const TASKS_OF=[
   {id:'eng',name:'英語',planMins:45,time:'7:30〜8:15'},
-  {id:'joho',name:'応用情報',planMins:15,time:'8:15〜8:30'},
 ];
-const ALL_IDS=['eng','joho','prog'];
+const ALL_IDS=['eng','prog'];
 const TMAP={};[...TASKS_TW,...TASKS_OF].forEach(t=>TMAP[t.id]=t);
 const FIXED_DEFAULTS=['床布団','楽天マガジン','YouTubeとガイカワサキ','エニタイム１','エニタイム２','図書館','本'];
 
@@ -206,7 +204,20 @@ function ld(k,d){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
 let rec=ld('jkv7_rec',{});
-let wdItems=ld('jkv7_wdi',{sat:[],sun:[]});
+function defaultWdItems(){
+  return {
+    sat:[
+      {type:'custom',name:'散歩',startTime:'06:30',endTime:'07:00'},
+      {type:'custom',name:'英語',startTime:'07:00',endTime:'08:00'}
+    ],
+    sun:[
+      {type:'custom',name:'散歩',startTime:'06:30',endTime:'07:00'},
+      {type:'custom',name:'英語',startTime:'07:00',endTime:'08:00'}
+    ]
+  };
+}
+let wdItems=ld('jkv7_wdi',null);
+if(!wdItems||!wdItems.sat||wdItems.sat.length===0&&wdItems.sun.length===0)wdItems=defaultWdItems();
 let curDay=null,curType=null,curMins={},pendingChip=null;
 
 function getTasks(t){return t==='tw'?TASKS_TW:TASKS_OF}
@@ -323,7 +334,7 @@ function updateWeekSummary(){
 
 function resetAll(){
   if(!confirm('今週のデータをリセットしますか？'))return;
-  rec={};wdItems={sat:[],sun:[]};
+  rec={};wdItems=defaultWdItems();
   sv('jkv7_rec',rec);sv('jkv7_wdi',wdItems);
   curDay=null;curType=null;curMins={};
   document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active','saved'));
@@ -418,37 +429,105 @@ function normalizeTime(v){
   return v.slice(0,2)+':'+v.slice(2,4);
 }
 
+function isAM(startTime){
+  var m=timeToMins(startTime);
+  return m!==null && m<720;
+}
+
+function buildNested(items){
+  // 重なりを自動検出してネスト構造を作る
+  // 各アイテムに depth を付与
+  var result=[];
+  items.forEach(function(item,ii){
+    var sm=timeToMins(item.startTime);
+    var em=timeToMins(item.endTime);
+    var depth=0;
+    for(var j=0;j<ii;j++){
+      var psm=timeToMins(items[j].startTime);
+      var pem=timeToMins(items[j].endTime);
+      if(psm!==null&&pem!==null&&sm!==null&&em!==null){
+        if(sm>=psm&&em<=pem){depth=Math.max(depth,result[j].depth+1);}
+      }
+    }
+    result.push({item:item,idx:ii,depth:depth});
+  });
+  return result;
+}
+
 function renderList(day){
-  const el=document.getElementById(day+'-list');
-  const items=wdItems[day]||[];
-  if(items.length===0){el.innerHTML='<p style="font-size:12px;color:#7A7870;padding:4px 0 8px">まだ予定がありません</p>';renderTotalBar(day);return;}
-  el.innerHTML=items.map((item,ii)=>{
-    const cls=item.type==='study'?'s-study':item.type==='fixed'?'s-fixed':'s-custom';
-    const dur=calcDur(item.startTime,item.endTime);
-    return `<div class="sched-item ${cls}">
-      <div class="item-top">
-        <span class="item-name">${item.name}</span>
-        ${dur?`<span class="dur-badge">${dur}分</span>`:''}
-        <div class="item-actions">
-          <button class="act-btn" onclick="cloneItem('${day}',${ii})"><i class="ti ti-copy"></i> 複製</button>
-          <button class="act-btn danger" onclick="rmItem('${day}',${ii})"><i class="ti ti-trash"></i> 削除</button>
-        </div>
-      </div>
-      <div class="item-times">
-        <input class="time-inp" type="text" inputmode="numeric" placeholder="09:00"
-          value="${item.startTime||''}"
-          onfocus="this.select()" onclick="this.select()"
-          onblur="commitTime('${day}',${ii},'startTime',this.value)"
-          aria-label="開始時刻"/>
-        <span class="time-sep">〜</span>
-        <input class="time-inp" type="text" inputmode="numeric" placeholder="10:00"
-          value="${item.endTime||''}"
-          onfocus="this.select()" onclick="this.select()"
-          onblur="commitTime('${day}',${ii},'endTime',this.value)"
-          aria-label="終了時刻"/>
-      </div>
-    </div>`;
-  }).join('');
+  var el=document.getElementById(day+'-list');
+  var items=wdItems[day]||[];
+  if(items.length===0){
+    el.innerHTML='<p style="font-size:12px;color:#7A7870;padding:4px 0 8px">まだ予定がありません</p>';
+    renderTotalBar(day);return;
+  }
+  el.innerHTML='';
+  var nested=buildNested(items);
+  var prevAM=null;
+  nested.forEach(function(n){
+    var item=n.item;var ii=n.idx;var depth=n.depth;
+    var am=isAM(item.startTime);
+    if(prevAM===null&&am){
+      var badge=document.createElement('div');
+      badge.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:8px';
+      badge.innerHTML='<span style="font-size:11px;font-weight:600;color:#085041;background:#E1F5EE;padding:2px 8px;border-radius:99px">⭐ ボーナスタイム（午前）</span>';
+      el.appendChild(badge);
+    }
+    if(prevAM===true&&!am){
+      var sep=document.createElement('div');
+      sep.style.cssText='display:flex;align-items:center;gap:8px;margin:10px 0 8px';
+      sep.innerHTML='<div style="flex:1;height:1px;background:#E4E2DA"></div><span style="font-size:11px;color:#7A7870;white-space:nowrap">午後〜</span><div style="flex:1;height:1px;background:#E4E2DA"></div>';
+      el.appendChild(sep);
+    }
+    prevAM=am;
+    var cls=item.type==='study'?'s-study':item.type==='fixed'?'s-fixed':'s-custom';
+    var dur=calcDur(item.startTime,item.endTime);
+    var wrapper=document.createElement('div');
+    wrapper.style.paddingLeft=(depth*20)+'px';
+    wrapper.style.marginBottom='6px';
+    var card=document.createElement('div');
+    card.className='sched-item '+cls;
+    card.style.marginBottom='0';
+    if(am)card.style.borderLeft='3px solid #1D9E75';
+    if(depth>0){card.style.borderLeft='3px solid #EF9F27';card.style.opacity='0.95';}
+    var top=document.createElement('div');
+    top.className='item-top';
+    var nameEl=document.createElement('span');
+    nameEl.className='item-name';
+    nameEl.textContent=item.name;
+    top.appendChild(nameEl);
+    if(dur){var db=document.createElement('span');db.className='dur-badge';db.textContent=dur+'分';top.appendChild(db);}
+    var acts=document.createElement('div');
+    acts.className='item-actions';
+    var cloneBtn=document.createElement('button');
+    cloneBtn.className='act-btn';
+    cloneBtn.innerHTML='<i class="ti ti-copy" aria-hidden="true"></i> 複製';
+    cloneBtn.addEventListener('click',(function(d,i){return function(){cloneItem(d,i);};})(day,ii));
+    var rmBtn=document.createElement('button');
+    rmBtn.className='act-btn danger';
+    rmBtn.innerHTML='<i class="ti ti-trash" aria-hidden="true"></i> 削除';
+    rmBtn.addEventListener('click',(function(d,i){return function(){rmItem(d,i);};})(day,ii));
+    acts.appendChild(cloneBtn);acts.appendChild(rmBtn);
+    top.appendChild(acts);
+    card.appendChild(top);
+    var times=document.createElement('div');
+    times.className='item-times';
+    var s=document.createElement('input');
+    s.className='time-inp';s.type='text';s.inputMode='numeric';s.placeholder='09:00';s.value=item.startTime||'';
+    s.addEventListener('focus',function(){this.select();});
+    s.addEventListener('click',function(){this.select();});
+    s.addEventListener('blur',(function(d,i){return function(){commitTime(d,i,'startTime',this.value);};})(day,ii));
+    var sep2=document.createElement('span');sep2.className='time-sep';sep2.textContent='〜';
+    var e2=document.createElement('input');
+    e2.className='time-inp';e2.type='text';e2.inputMode='numeric';e2.placeholder='10:00';e2.value=item.endTime||'';
+    e2.addEventListener('focus',function(){this.select();});
+    e2.addEventListener('click',function(){this.select();});
+    e2.addEventListener('blur',(function(d,i){return function(){commitTime(d,i,'endTime',this.value);};})(day,ii));
+    times.appendChild(s);times.appendChild(sep2);times.appendChild(e2);
+    card.appendChild(times);
+    wrapper.appendChild(card);
+    el.appendChild(wrapper);
+  });
   renderTotalBar(day);
 }
 
