@@ -54,23 +54,19 @@ h1{font-size:18px;font-weight:500}
 
 <script>
 function defaults(){
+  var base=[
+    {name:'散歩・カフェ移動',s:'06:30',e:'07:00'},
+    {name:'英語',s:'07:00',e:'08:00'},
+    {name:'ケース問題',s:'08:00',e:'09:00'},
+    {name:'読書・楽天マガジン・図書館',s:'09:00',e:'11:00'},
+    {name:'エニタイム',s:'11:00',e:'12:00'},
+    {name:'床',s:'17:00',e:'17:30'},
+    {name:'Youtubeとガイカワサキ',s:'17:30',e:'18:00'},
+    {name:'AI',s:'18:00',e:'19:00'}
+  ];
   return {
-    sat:[
-      {name:'散歩・カフェ移動',s:'06:30',e:'07:00'},
-      {name:'英語',s:'07:00',e:'08:00'},
-      {name:'ケース問題',s:'08:00',e:'09:00'},
-      {name:'読書・楽天マガジン・図書館',s:'09:00',e:'11:00'},
-      {name:'エニタイム',s:'11:00',e:'12:00'},
-      {name:'Claude',s:'18:00',e:'19:00'}
-    ],
-    sun:[
-      {name:'散歩・カフェ移動',s:'06:30',e:'07:00'},
-      {name:'英語',s:'07:00',e:'08:00'},
-      {name:'ケース問題',s:'08:00',e:'09:00'},
-      {name:'読書・楽天マガジン・図書館',s:'09:00',e:'11:00'},
-      {name:'エニタイム',s:'11:00',e:'12:00'},
-      {name:'Claude',s:'18:00',e:'19:00'}
-    ]
+    sat:base.map(function(x){return {name:x.name,s:x.s,e:x.e};}),
+    sun:base.map(function(x){return {name:x.name,s:x.s,e:x.e};})
   };
 }
 var DAYS=[{key:'sat',label:'土曜日',icon:'ti-sun'},{key:'sun',label:'日曜日',icon:'ti-moon'}];
