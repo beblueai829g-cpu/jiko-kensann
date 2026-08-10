@@ -27,12 +27,30 @@ h1{font-size:18px;font-weight:500;margin-bottom:4px}
 .gym-btn i{font-size:15px;flex-shrink:0}
 .divider{height:1px;background:#E4E2DA;margin:20px 0}
 .reset-btn{width:100%;padding:10px;background:none;color:#7A7870;border:1px solid #E4E2DA;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:8px}
+.penalty-box{background:#fff;border:1px solid #E4E2DA;border-radius:12px;padding:14px;margin-bottom:20px}
+.penalty-title{font-size:15px;font-weight:600;margin-bottom:2px}
+.penalty-sub{font-size:11px;color:#7A7870;margin-bottom:12px}
+.penalty-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E4E2DA}
+.penalty-row:last-of-type{border-bottom:none}
+.penalty-name{font-size:14px;font-weight:500}
+.penalty-desc{font-size:11px;color:#7A7870;margin-top:1px}
+.penalty-toggle{padding:7px 14px;font-size:12px;font-family:'DM Sans',sans-serif;border-radius:99px;cursor:pointer;border:1px solid #E4E2DA;background:#fff;color:#7A7870;white-space:nowrap}
+.penalty-toggle.done{border-color:#5DCAA5;background:#E1F5EE;color:#085041}
+.penalty-total{display:flex;justify-content:space-between;align-items:center;padding-top:10px;margin-top:4px;border-top:1px solid #E4E2DA;font-size:13px;color:#7A7870}
+.penalty-total strong{font-family:'DM Mono',monospace;font-size:16px;color:#A32D2D}
+.penalty-total strong.zero{color:#1D9E75}
 </style>
 </head>
 <body>
 <div class="app">
   <h1>筋トレトラッカー</h1>
   <p class="sub">タップで完了/未完了を切り替え</p>
+  <div class="penalty-box">
+    <div class="penalty-title">今週の生活習慣</div>
+    <div class="penalty-sub">未達成は共用口座へ1,000円ずつ課金</div>
+    <div id="penalty-root"></div>
+    <div class="penalty-total"><span>今週の課金額</span><strong id="penalty-amount">¥0</strong></div>
+  </div>
   <div id="gym-root"></div>
   <button class="reset-btn" id="reset-btn"><i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>週リセット</button>
 </div>
@@ -153,12 +171,50 @@ function render(){
   });
 }
 
+var LIFE_ITEMS=[
+  {id:'eng',name:'英語（1週間で1周）',desc:'アプリの英語プランを週内に完了'},
+  {id:'read',name:'読書（1冊）',desc:'今週中に1冊読み切る'}
+];
+var lifeDone=ld('life_done',{});
+
+function toggleLife(id){
+  lifeDone[id]=!lifeDone[id];
+  sv('life_done',lifeDone);
+  renderPenalty();
+}
+
+function renderPenalty(){
+  var root=document.getElementById('penalty-root');
+  root.innerHTML='';
+  var penalty=0;
+  LIFE_ITEMS.forEach(function(item){
+    var done=!!lifeDone[item.id];
+    if(!done)penalty+=1000;
+    var row=document.createElement('div');
+    row.className='penalty-row';
+    var left=document.createElement('div');
+    left.innerHTML='<div class="penalty-name">'+item.name+'</div><div class="penalty-desc">'+item.desc+'</div>';
+    var btn=document.createElement('button');
+    btn.className='penalty-toggle'+(done?' done':'');
+    btn.innerHTML=done?'<i class="ti ti-circle-check" aria-hidden="true"></i> 達成':'未達成';
+    btn.addEventListener('click',function(){toggleLife(item.id);});
+    row.appendChild(left);row.appendChild(btn);
+    root.appendChild(row);
+  });
+  var amountEl=document.getElementById('penalty-amount');
+  amountEl.textContent='¥'+penalty.toLocaleString();
+  amountEl.className=penalty>0?'':'zero';
+}
+
 document.getElementById('reset-btn').addEventListener('click',function(){
-  if(!confirm('今週の筋トレ記録をリセットしますか？'))return;
-  gymDone={};sv('gym_done',gymDone);render();
+  if(!confirm('今週の筋トレ・生活習慣の記録をリセットしますか？'))return;
+  gymDone={};sv('gym_done',gymDone);
+  lifeDone={};sv('life_done',lifeDone);
+  render();renderPenalty();
 });
 
 render();
+renderPenalty();
 </script>
 </body>
 </html>
