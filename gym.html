@@ -57,28 +57,34 @@ h1{font-size:18px;font-weight:500;margin-bottom:4px}
 <script>
 var GYM_GROUPS=[
   {
-    label:'グループ１（胸・二頭・脚）',
+    label:'１回目',
     must:[
-      {id:'legs',name:'脚'},
-      {id:'chest1',name:'胸１'},{id:'chest2',name:'胸２'},{id:'chest3',name:'胸３'},
-      {id:'bi1',name:'二頭１'},{id:'bi2',name:'二頭２'},{id:'bi3',name:'二頭３'},
-      {id:'abs',name:'腹筋'}
+      {id:'legs1',name:'脚１'},
+      {id:'chest1',name:'胸１'},{id:'chest2',name:'胸２'},
+      {id:'bi1',name:'二頭１'},{id:'bi2',name:'二頭２'},
+      {id:'abs1',name:'腹筋１'}
     ],
-    opt:[
-      {id:'sh4',name:'肩４'},{id:'tri4',name:'三頭４'}
-    ]
+    opt:[]
   },
   {
-    label:'グループ２（背中・肩・三頭）',
+    label:'２回目',
     must:[
-      {id:'back',name:'背中'},
-      {id:'sh1',name:'肩１'},{id:'sh2',name:'肩２'},{id:'sh3',name:'肩３'},
-      {id:'tri1',name:'三頭１'},{id:'tri2',name:'三頭２'},{id:'tri3',name:'三頭３'},
+      {id:'back1',name:'背中１'},
+      {id:'sh1',name:'肩１'},{id:'sh2',name:'肩２'},
+      {id:'tri1',name:'三頭１'},{id:'tri2',name:'三頭２'},
+      {id:'abs2',name:'腹筋２'}
+    ],
+    opt:[]
+  },
+  {
+    label:'３回目',
+    must:[
+      {id:'legs2',name:'脚２'},{id:'back2',name:'背中２'},
+      {id:'chest3',name:'胸３'},{id:'sh3',name:'肩３'},
+      {id:'bi3',name:'二頭３'},{id:'tri3',name:'三頭３'},
       {id:'run',name:'ラン（20分）'}
     ],
-    opt:[
-      {id:'chest4',name:'胸４'},{id:'bi4',name:'二頭４'}
-    ]
+    opt:[]
   }
 ];
 
@@ -98,7 +104,6 @@ function render(){
 
   GYM_GROUPS.forEach(function(group,gi){
     var mustDone=group.must.filter(function(g){return gymDone[g.id];}).length;
-    var optDone=group.opt.filter(function(g){return gymDone[g.id];}).length;
 
     if(gi>0){
       var div=document.createElement('div');
@@ -133,14 +138,8 @@ function render(){
       return wrap;
     }
     root.appendChild(makeBar(mustDone,group.must.length,'必須'));
-    root.appendChild(makeBar(optDone,group.opt.length,'余裕があれば'));
 
     // Must buttons
-    var lbl1=document.createElement('div');
-    lbl1.className='section-lbl';
-    lbl1.textContent='必須';
-    root.appendChild(lbl1);
-
     var grid1=document.createElement('div');
     grid1.className='grid';
     group.must.forEach(function(g){
@@ -151,23 +150,6 @@ function render(){
       grid1.appendChild(btn);
     });
     root.appendChild(grid1);
-
-    // Opt buttons
-    var lbl2=document.createElement('div');
-    lbl2.className='section-lbl';
-    lbl2.textContent='余裕があれば';
-    root.appendChild(lbl2);
-
-    var grid2=document.createElement('div');
-    grid2.className='grid';
-    group.opt.forEach(function(g){
-      var btn=document.createElement('button');
-      btn.className='gym-btn'+(gymDone[g.id]?' done':'');
-      btn.innerHTML='<i class="ti '+(gymDone[g.id]?'ti-circle-check':'ti-circle')+'" aria-hidden="true"></i><span>'+g.name+'</span>';
-      btn.addEventListener('click',function(){toggle(g.id);});
-      grid2.appendChild(btn);
-    });
-    root.appendChild(grid2);
   });
 }
 
